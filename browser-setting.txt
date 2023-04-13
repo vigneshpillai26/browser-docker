@@ -1,0 +1,27 @@
+
+#TO change panel icon paste png to below mentioned path
+
+cp <your png>   /usr/share/kasmvnc/www/app/images/icons
+
+and chage entry in below mentioned file
+
+vi /usr/share/kasmvnc/www/index.html    (Default logo will be apmosys1.png)
+
+
+
+
+
+# To change backgroud paste png to below mentioned path
+cp <your png>   /usr/share/extra/backgrounds
+
+and change entry in docker file
+example : RUN cp /usr/share/extra/backgrounds/apmosys.png /usr/share/extra/backgrounds/bg_default.png   (default will be apmosys.png)
+
+
+
+
+#To change connecting png paste png to below mentioned path
+cp <your.png> /usr/share/kasmvnc/www/dist/images
+
+and change entry in below file
+vi /usr/share/kasmvnc/www/dist/style.bundle.css (default png will be 782e6b34fd46a00744786246a454ed11.png)
