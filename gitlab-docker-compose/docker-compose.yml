@@ -1,0 +1,116 @@
+version: '3.5'
+volumes:
+     redis_volume:
+     postgresql_volume:        
+     gitlab_volume:
+      
+     git_home_volume:
+     
+
+services:
+
+  redis:
+    restart: always
+    image: redis:6.2.6
+    command:
+       - --loglevel warning
+    volumes:
+       - redis_volume:/data:Z
+
+  postgresql:
+    restart: always
+    image: sameersbn/postgresql:12-20200524
+    volumes:
+      - postgresql_volume:/var/lib/postgresql:Z
+    environment:
+      - DB_USER=gitlab
+      - DB_PASS=password
+      - DB_NAME=gitlab_db
+      - DB_EXTENSION=pg_trgm,btree_gist   
+
+
+
+
+  
+  
+  
+  gitlab:
+    #image: gitlab/gitlab-ce:latest
+    image: sameersbn/gitlab:14.9.3
+    # hostname:
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - postgresql
+    healthcheck:
+      test: ["CMD", "/usr/local/sbin/healthcheck"]
+      interval: 5m
+      timeout: 10s
+      retries: 3
+      start_period: 5m    
+    environment:
+      # GITLAB_OMNIBUS_CONFIG: |
+      # gitlab_rails['gitlab_shell_ssh_port'] = 8822
+      - DEBUG=false
+      - DB_ADAPTER=postgresql
+      - DB_HOST=postgresql
+      - DB_PORT=5432
+      - DB_USER=gitlab
+      - DB_PASS=password
+      - DB_NAME=gitlab_db
+      
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+      - TZ=Asia/Kolkata
+      - GITLAB_TIMEZONE=Kolkata
+      - GITLAB_HTTPS=false
+      - SSL_SELF_SIGNED=false
+
+      - GITLAB_HOST=localhost
+      - GITLAB_PORT=8000
+      - GITLAB_SSH_PORT=8822
+      - GITLAB_RELATIVE_URL_ROOT=
+      - GITLAB_SECRETS_DB_KEY_BASE=long-and-random-alphanumeric-string
+      - GITLAB_SECRETS_SECRET_KEY_BASE=long-and-random-alphanumeric-string
+      - GITLAB_SECRETS_OTP_KEY_BASE=long-and-random-alphanumeric-string
+
+      - GITLAB_ROOT_PASSWORD=Welcome@2021
+      - GITLAB_ROOT_EMAIL=vignesh.pillai@apmosys.com
+
+    #  - GITLAB_INCOMING_EMAIL_ENABLED=true
+    #  - GITLAB_INCOMING_EMAIL_ADDRESS=gitlab+%{key}@mydomain.org
+
+    #  - GITLAB_EMAIL=notifications@example.com
+    #  - GITLAB_EMAIL_REPLY_TO=noreply@example.com
+    #  - GITLAB_INCOMING_EMAIL_ADDRESS=reply@example.com
+
+      - GITLAB_BACKUP_SCHEDULE=daily
+      - GITLAB_BACKUP_TIME=01:00
+
+    #  - SMTP_ENABLED=true
+    #  - SMTP_DOMAIN=apmosys.com
+    #  - SMTP_HOST=mail.apmosys.com
+    #  - SMTP_PORT=587
+    #  - SMTP_USER=vignesh.pillai@apmosys.com
+    #  - SMTP_PASS=Welcome@2021
+    #  - SMTP_STARTTLS=true
+    #  - SMTP_AUTHENTICATION=login
+
+    #  - IMAP_ENABLED=true
+    #  - IMAP_HOST=mail.apmosys.com
+    #  - IMAP_PORT=143
+    #  - IMAP_USER=vignesh.pillai@apmosys.com
+    #  - IMAP_PASS=Welcome@2021
+    #  - IMAP_SSL=false
+    #  - IMAP_STARTTLS=true
+
+    ports:
+      - "8000:80"
+      - "8822:22"
+    volumes:
+      - gitlab_volume:/etc/gitlab
+      - gitlab_volume:/var/opt/gitlab
+      - gitlab_volume:/var/log/gitlab
+      - git_home_volume:/home/git/data:Z
+       
