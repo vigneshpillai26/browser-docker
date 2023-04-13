@@ -1,0 +1,32 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+   name: rust-desk-deploy
+spec:
+   replicas: 1
+   selector:     
+    matchLabels:
+     app: rustdesk
+   template:
+     metadata:
+       name: rust-desk-pod
+       labels:
+         app: rustdesk
+     spec:
+      containers:
+        - name: rust-desk-server
+          image: rustdesk/rustdesk-server:latest
+          ports: 
+             - containerPort: 21115
+             - containerPort: 21116
+#             - containerPort: 21116/udp
+             - containerPort: 21118
+          command: [ "/usr/bin/hbbs", "-r", "localhost:21117" ]
+
+        - name: rust-connector
+          image: rustdesk/rustdesk-server:latest
+          ports:
+              - containerPort: 21117
+              - containerPort: 21119
+          command: [ /usr/bin/hbbr ]
+  

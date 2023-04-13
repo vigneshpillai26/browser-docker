@@ -1,0 +1,46 @@
+kind: Service
+apiVersion: v1
+metadata: 
+  name: rust-desk-service
+spec:
+ ports: 
+  - name: port1
+    port: 21115
+    targetPort: 21115
+  
+  - name: port2
+    port: 21117
+    targetPort: 21117
+
+  - name: port3
+    port: 21118
+    targetPort: 21118
+
+  - name: port4
+    port: 21119
+    targetPort: 21119
+
+ selector:
+    app: rustdesk
+ 
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rust-desk-external-ip
+spec:
+ ports:
+  - name: port5
+    protocol: UDP
+    port: 21116
+    targetPort: 21116
+  
+  - name: port6
+    port: 21116
+    targetPort: 21116   
+  
+ selector:
+    app: rustdesk
+ externalIPs:
+   - 192.168.12.62
+
