@@ -1,0 +1,152 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: gitlab-deploy
+spec: 
+   replicas: 1
+   selector: 
+     matchLabels: 
+       app: gitlab
+   template: 
+     metadata: 
+       name: gitlab-pod
+       labels:
+         app: gitlab
+     spec: 
+       containers:
+         - name: redis
+           image: redis:6.2.6
+#           command: ["--loglevel warning"] 
+           volumeMounts:
+              -  mountPath: /data
+                 name: redis-storage 
+
+
+
+         - name: postgresql
+           image: sameersbn/postgresql:12-20200524
+           env:
+             - name: DB_USER
+               value: gitlab
+             - name: DB_PASS
+               value: "password"
+
+             - name: DB_NAME
+               value: "gitlab_db"
+
+             - name: DB_EXTENSION
+               value: "pg_trgm,btree_gist"
+           volumeMounts:
+              -  mountPath: /var/lib/postgresql
+                 name: postgresql-storage 
+         
+         - name: gitlab
+           image: sameersbn/gitlab:14.9.3
+           ports: 
+              - containerPort: 80
+              - containerPort: 22
+           env: 
+             - name: DEBUG 
+               value: "false"     
+              
+             - name: DB_ADAPTER
+               value: "postgresql"    
+                
+             - name: DB_HOST
+               value: "localhost"
+ 
+             - name: DB_PORT
+               value: "5432"
+ 
+             - name: DB_USER
+               value: "gitlab"
+ 
+             - name: DB_PASS
+               value: "password"
+
+             - name: DB_NAME    
+               value: "gitlab_db"
+
+             - name: REDIS_HOST
+               value: "localhost"
+
+             - name: REDIS_PORT
+               value: "6379"
+
+             - name: TZ
+               value: "Asia/Kolkata" 
+
+             - name: GITLAB_TIMEZONE
+               value: "Kolkata"
+ 
+             - name:  GITLAB_HTTPS
+               value: "false"
+
+             - name: SSL_SELF_SIGNED
+               value: "false"
+
+             - name: GITLAB_HOST
+               value: "localhost"
+
+             - name: GITLAB_PORT
+               value: "8000"
+
+             - name: GITLAB_SSH_PORT 
+               value: "8822"
+
+             - name: GITLAB_SECRETS_DB_KEY_BASE
+               value: "long-and-random-alphanumeric-string"
+
+             - name: GITLAB_SECRETS_SECRET_KEY_BASE
+               value: "long-and-random-alphanumeric-string"
+
+             - name: GITLAB_SECRETS_OTP_KEY_BASE
+               value: "long-and-random-alphanumeric-string"
+
+             - name: GITLAB_ROOT_PASSWORD
+               value: "Welcome@2021"
+
+             - name: GITLAB_ROOT_EMAIL
+               value: "vignesh.pillai@apmosys.com"
+  
+             - name: GITLAB_BACKUP_SCHEDULE
+               value: "daily"
+
+             - name: GITLAB_BACKUP_TIME
+               value: "01:00"
+
+           volumeMounts:
+              -  mountPath: /etc/gitlab
+                 name: gitlab-storage
+
+              -  mountPath: /var/opt/gitlab
+                 name: gitlab-storage
+
+               
+              -  mountPath: /var/log/gitlab
+                 name: gitlab-storage
+
+                 
+              -  mountPath: /home/git/data
+                 name: home-storage 
+                                                          
+       volumes:
+
+         - name: gitlab-storage
+           persistentVolumeClaim:
+             claimName: gitlab-pvc                        
+                       
+         - name: home-storage
+           persistentVolumeClaim:
+             claimName: gitlab-home-pvc
+
+         - name: postgresql-storage
+           persistentVolumeClaim:
+             claimName: postgresql-pvc
+
+         - name: redis-storage
+           persistentVolumeClaim:
+             claimName: redis-pvc
+
+
+ 
